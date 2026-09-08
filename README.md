@@ -6,8 +6,7 @@ It is deliberately built as a **capital-deployment system**, not a buy/sell pred
 > Score → Regime → DCA intensity → Historical validation
 > (never `Score → BUY`)
 
-Everything is a static site — open `index.html`, or publish it with GitHub Pages and add it to your phone's home screen.
-The whole interface switches between **中文** and **English** with one tap.
+The whole interface switches between **中文** and **English** with one tap (https://chuah020704.github.io/SP500index/).
 
 ## What it shows
 
