@@ -3,8 +3,11 @@
  *
  * Only real market data is used. Several public sources are tried in order and
  * each one can be routed through a CORS relay when the browser blocks the
- * direct call. The last good payload is cached in localStorage so the
- * workstation still opens (clearly flagged as cached) when the network fails.
+ * direct call. A same-origin snapshot (refreshed periodically by a scheduled
+ * GitHub Actions workflow, see `scripts/fetch-snapshot.js`) is used as a
+ * reliable base when the live sources are unreachable from the browser. The
+ * last good payload is also cached in localStorage so the workstation still
+ * opens (clearly flagged as cached) when the network fails entirely.
  */
 
 import { normalizeBars } from './indicators.js';
@@ -13,6 +16,13 @@ export const SYMBOL = '^GSPC';
 const CACHE_KEY = 'sp500.history.v1';
 const CACHE_TTL_OPEN = 10 * 60 * 1000; // 10 minutes while the US market is open
 const CACHE_TTL_CLOSED = 6 * 60 * 60 * 1000; // 6 hours when it is closed
+
+// Same-origin snapshot produced periodically by `.github/workflows/update-data.yml`
+// (via `scripts/fetch-snapshot.js`) running on a GitHub Actions runner. Loading
+// this first means the workstation is never hard-blocked by a browser CORS
+// failure: the file ships with the page itself, on the same origin.
+const SNAPSHOT_URL = new URL('../../data/sp500.json', import.meta.url).href;
+const SNAPSHOT_MAX_AGE = 24 * 60 * 60 * 1000; // ignore the snapshot if it is over a day old
 
 const CORS_RELAYS = [
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -195,8 +205,29 @@ export function buildQuote(payload, now = new Date()) {
 }
 
 /**
- * Load the index history: cache first when fresh, otherwise Yahoo, then Stooq.
- * Returns `{ bars, meta, source, cached, fetchedAt, error }`.
+ * Same-origin snapshot written periodically by `.github/workflows/update-data.yml`
+ * (via `scripts/fetch-snapshot.js`, running on a GitHub Actions runner). Because
+ * it ships with the page itself it is never blocked by a browser CORS wall, so
+ * it works even when a visitor's network/browser blocks Yahoo, Stooq and every
+ * CORS relay.
+ */
+export async function fetchSnapshot() {
+  const res = await fetch(`${SNAPSHOT_URL}?t=${Date.now()}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  if (!json?.bars?.length) throw new Error('empty snapshot');
+  return json;
+}
+
+/**
+ * Load the index history:
+ *  1. Local cache, if still fresh (unchanged fast path).
+ *  2. The bundled same-origin snapshot (reliable base, no CORS exposure).
+ *  3. A live direct/relay fetch (Yahoo, then Stooq) attempted as a "top-up" -
+ *     used when it succeeds because it is fresher, but never a hard
+ *     requirement since the snapshot already makes the app usable.
+ *  4. The last cache entry, marked stale, if everything above fails.
+ * Returns `{ bars, meta, source, cached, snapshot, fetchedAt, error }`.
  */
 export async function loadHistory({ force = false, now = new Date() } = {}) {
   const cached = readCache();
@@ -206,6 +237,15 @@ export async function loadHistory({ force = false, now = new Date() } = {}) {
   }
 
   const errors = [];
+  let snapshot = null;
+  try {
+    snapshot = await fetchSnapshot();
+    if (snapshot.bars.length < 300) throw new Error('snapshot history too short');
+  } catch (err) {
+    errors.push(`snapshot: ${err.message}`);
+    snapshot = null;
+  }
+
   for (const loader of [fetchYahoo, fetchStooq]) {
     try {
       const payload = await loader();
@@ -215,6 +255,21 @@ export async function loadHistory({ force = false, now = new Date() } = {}) {
     } catch (err) {
       errors.push(`${loader.name}: ${err.message}`);
     }
+  }
+
+  if (snapshot) {
+    const payload = { source: snapshot.source, bars: snapshot.bars, meta: snapshot.meta };
+    const snapshotAge = Date.now() - (snapshot.generatedAt || 0);
+    writeCache(payload);
+    return {
+      ...payload,
+      cached: false,
+      snapshot: true,
+      stale: !snapshot.generatedAt || snapshotAge > SNAPSHOT_MAX_AGE,
+      snapshotGeneratedAt: snapshot.generatedAt || null,
+      fetchedAt: Date.now(),
+      error: errors.join(' | '),
+    };
   }
 
   if (cached) {

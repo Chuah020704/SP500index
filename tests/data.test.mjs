@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseYahoo, parseStooq, buildQuote, isMarketOpen, nyDate } from '../assets/js/data.js';
+import { parseYahoo, parseStooq, buildQuote, isMarketOpen, nyDate, fetchSnapshot, loadHistory } from '../assets/js/data.js';
 
 const yahooFixture = {
   chart: {
@@ -89,4 +89,113 @@ test('isMarketOpen respects New York trading hours', () => {
 
 test('nyDate returns the New York calendar day', () => {
   assert.equal(nyDate(new Date('2026-09-08T02:00:00Z')), '2026-09-07');
+});
+
+function withMockedFetch(handler, fn) {
+  const original = globalThis.fetch;
+  globalThis.fetch = handler;
+  return fn().finally(() => {
+    globalThis.fetch = original;
+  });
+}
+
+function jsonResponse(body) {
+  return { ok: true, status: 200, json: async () => body, text: async () => JSON.stringify(body) };
+}
+
+function makeSnapshotBars(count) {
+  const bars = [];
+  const date = new Date(Date.UTC(2015, 0, 1));
+  while (bars.length < count) {
+    const day = date.getUTCDay();
+    if (day !== 0 && day !== 6) {
+      bars.push({ date: date.toISOString().slice(0, 10), open: 100, high: 101, low: 99, close: 100 });
+    }
+    date.setUTCDate(date.getUTCDate() + 1);
+  }
+  return bars;
+}
+
+test('fetchSnapshot returns the parsed snapshot JSON on success', async () => {
+  const snapshot = { source: 'Yahoo Finance', bars: makeSnapshotBars(320), meta: { currency: 'USD' }, generatedAt: Date.now() };
+  await withMockedFetch(
+    async () => jsonResponse(snapshot),
+    async () => {
+      const result = await fetchSnapshot();
+      assert.equal(result.bars.length, 320);
+      assert.equal(result.source, 'Yahoo Finance');
+    }
+  );
+});
+
+test('fetchSnapshot rejects a payload without bars', async () => {
+  await withMockedFetch(
+    async () => jsonResponse({ bars: [] }),
+    async () => {
+      await assert.rejects(() => fetchSnapshot(), /empty snapshot/);
+    }
+  );
+});
+
+test('loadHistory falls back to the snapshot when Yahoo and Stooq are unreachable', async () => {
+  const snapshot = {
+    source: 'Yahoo Finance',
+    bars: makeSnapshotBars(320),
+    meta: { currency: 'USD' },
+    generatedAt: Date.now(),
+  };
+  await withMockedFetch(
+    async (url) => {
+      if (String(url).includes('sp500.json')) return jsonResponse(snapshot);
+      throw new Error('Fetch is aborted');
+    },
+    async () => {
+      const result = await loadHistory({ force: true });
+      assert.equal(result.snapshot, true);
+      assert.equal(result.stale, false);
+      assert.equal(result.bars.length, 320);
+      assert.match(result.error, /fetchYahoo/);
+      assert.match(result.error, /fetchStooq/);
+    }
+  );
+});
+
+test('loadHistory prefers a live source over the snapshot when both are available', async () => {
+  const snapshot = { source: 'Yahoo Finance', bars: makeSnapshotBars(320), meta: {}, generatedAt: Date.now() };
+  await withMockedFetch(
+    async (url) => {
+      const hostname = new URL(String(url)).hostname;
+      if (String(url).includes('sp500.json')) return jsonResponse(snapshot);
+      if (hostname === 'query1.finance.yahoo.com') {
+        const yahooFixtureLocal = {
+          chart: {
+            result: [
+              {
+                meta: { currency: 'USD', marketState: 'CLOSED', regularMarketPrice: 100, chartPreviousClose: 99 },
+                timestamp: makeSnapshotBars(320).map((b) => Math.floor(new Date(`${b.date}T00:00:00Z`).getTime() / 1000)),
+                indicators: {
+                  quote: [
+                    {
+                      open: makeSnapshotBars(320).map(() => 100),
+                      high: makeSnapshotBars(320).map(() => 101),
+                      low: makeSnapshotBars(320).map(() => 99),
+                      close: makeSnapshotBars(320).map(() => 100),
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        };
+        return jsonResponse(yahooFixtureLocal);
+      }
+      throw new Error('Fetch is aborted');
+    },
+    async () => {
+      const result = await loadHistory({ force: true });
+      assert.equal(result.snapshot, undefined);
+      assert.equal(result.source, 'Yahoo Finance');
+      assert.equal(result.bars.length, 320);
+    }
+  );
 });
