@@ -1,0 +1,24 @@
+{
+  "name": "sp500index",
+  "version": "1.0.0",
+  "description": "Phone-friendly bilingual S&P 500 AI DCA workstation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test",
+    "build": "node scripts/build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://localhost:26831/Chuah020704/SP500index"
+  },
+  "keywords": [
+    "sp500",
+    "dca",
+    "workstation",
+    "pwa"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
