@@ -5,6 +5,14 @@ on:
     # Every 30 minutes, Mon-Fri (roughly covers pre-market through after-hours
     # US trading; the workstation itself skips the snapshot when it is stale).
     - cron: '*/30 * * * 1-5'
+  push:
+    # Bootstrap/refresh the snapshot as soon as this workflow (or the fetch
+    # logic it depends on) lands on main, instead of waiting for the next
+    # scheduled tick. Ignore changes to the generated snapshot itself so this
+    # doesn't loop against the "Commit snapshot if changed" step below.
+    branches: [main]
+    paths-ignore:
+      - 'data/sp500.json'
   workflow_dispatch:
 
 permissions:
