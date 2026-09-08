@@ -173,12 +173,13 @@ export function buildQuote(payload, now = new Date()) {
   const bars = payload.bars;
   const last = bars[bars.length - 1];
   const prev = bars[bars.length - 2];
-  const open = isMarketOpen(now) && payload.meta.marketState === 'REGULAR';
-  const live = Number.isFinite(payload.meta.regularMarketPrice)
-    ? payload.meta.regularMarketPrice
-    : last.close;
+  // A cache written by an older version of the app may lack `meta`; fall back to
+  // the bars rather than throwing, which would brick the page until storage is cleared.
+  const meta = payload.meta || {};
+  const open = isMarketOpen(now) && meta.marketState === 'REGULAR';
+  const live = Number.isFinite(meta.regularMarketPrice) ? meta.regularMarketPrice : last.close;
   const price = open ? live : last.close;
-  const reference = open ? (Number.isFinite(payload.meta.previousClose) ? payload.meta.previousClose : prev?.close) : prev?.close;
+  const reference = open ? (Number.isFinite(meta.previousClose) ? meta.previousClose : prev?.close) : prev?.close;
   const change = Number.isFinite(reference) ? price - reference : null;
   return {
     symbol: SYMBOL,
@@ -187,7 +188,7 @@ export function buildQuote(payload, now = new Date()) {
     change,
     changePct: Number.isFinite(change) && reference ? change / reference : null,
     isLive: open,
-    asOf: open ? payload.meta.regularMarketTime || Date.now() : Date.parse(`${last.date}T21:00:00Z`),
+    asOf: open ? meta.regularMarketTime || Date.now() : Date.parse(`${last.date}T21:00:00Z`),
     lastCloseDate: last.date,
     source: payload.source,
   };
