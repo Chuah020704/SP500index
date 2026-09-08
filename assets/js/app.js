@@ -48,7 +48,10 @@ const state = {
 
 function loadSettings() {
   try {
-    return { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) };
+    const stored = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+    const merged = { ...DEFAULT_SETTINGS, ...stored };
+    merged.currency = String(merged.currency).replace(/[^\p{L}\p{Sc}.]/gu, '').slice(0, 4) || 'RM';
+    return merged;
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
@@ -65,7 +68,10 @@ function saveSettings() {
 const lang = () => state.settings.lang;
 const esc = (value) =>
   String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const money = (value) => `${state.settings.currency} ${formatNumber(value, lang(), { maximumFractionDigits: 0, minimumFractionDigits: 0 })}`;
+/** Currency labels are user input, so they are sanitised on entry and escaped on output. */
+const sanitizeCurrency = (value) => String(value).replace(/[^\p{L}\p{Sc}.]/gu, '').slice(0, 4);
+const money = (value) =>
+  `${esc(state.settings.currency)} ${formatNumber(value, lang(), { maximumFractionDigits: 0, minimumFractionDigits: 0 })}`;
 
 /* ---------------------------------------------------------------- rendering */
 
@@ -216,7 +222,7 @@ function renderHoldingsCard() {
   bindNumber('in-monthly', 'monthlyBase');
   const currency = document.getElementById('in-currency');
   currency.addEventListener('change', () => {
-    state.settings.currency = currency.value.trim() || 'RM';
+    state.settings.currency = sanitizeCurrency(currency.value.trim()) || 'RM';
     saveSettings();
     renderHoldingsCard();
     renderWealthCard();
@@ -294,6 +300,16 @@ function renderChartCard() {
   );
 }
 
+/** Only http(s) links from feeds are rendered, so a hostile feed cannot inject a javascript: URL. */
+function safeUrl(url) {
+  try {
+    const parsed = new URL(url, window.location.href);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : '#';
+  } catch {
+    return '#';
+  }
+}
+
 function newsItemHtml(item) {
   const topics = item.topics
     .map((topic) => `<span class="tag">${t(`topic${topic[0].toUpperCase()}${topic.slice(1)}`, lang())}</span>`)
@@ -301,7 +317,7 @@ function newsItemHtml(item) {
   const time = item.publishedAt ? formatDateTime(item.publishedAt, lang()) : '';
   const source = item.sourceName[lang()] || item.sourceName.en;
   return `<li>
-      <a href="${esc(item.link)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a>
+      <a href="${esc(safeUrl(item.link))}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a>
       <div class="news-meta"><span class="src">${esc(source)}</span><span class="muted">${time}</span>${topics}</div>
     </li>`;
 }
