@@ -23,6 +23,7 @@ const DICT = {
   dataSource: { zh: '数据来源', en: 'Source' },
   cachedData: { zh: '使用本地缓存', en: 'Served from local cache' },
   staleData: { zh: '网络失败，显示上次缓存数据', en: 'Network failed — showing last cached data' },
+  snapshotData: { zh: '实时源不可达，使用定时快照数据', en: 'Live source unreachable — showing scheduled snapshot' },
   live: { zh: '交易中', en: 'Live session' },
   lastClose: { zh: '最近收盘', en: 'Last close' },
   updated: { zh: '更新于', en: 'Updated' },

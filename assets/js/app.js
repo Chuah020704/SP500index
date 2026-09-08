@@ -91,9 +91,11 @@ function renderQuote() {
   const badge = q.isLive ? t('live', lang()) : `${t('lastClose', lang())} · ${q.lastCloseDate}`;
   const cacheNote = state.payload.stale
     ? `<span class="warn">${t('staleData', lang())}</span>`
-    : state.payload.cached
-      ? `<span class="muted">${t('cachedData', lang())}</span>`
-      : '';
+    : state.payload.snapshot
+      ? `<span class="muted">${t('snapshotData', lang())}</span>`
+      : state.payload.cached
+        ? `<span class="muted">${t('cachedData', lang())}</span>`
+        : '';
   el.innerHTML = `
     <div class="quote-main">
       <div class="quote-name">🟦 S&amp;P 500 <span class="muted">^GSPC</span></div>

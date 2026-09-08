@@ -1,0 +1,40 @@
+name: Update market data snapshot
+
+on:
+  schedule:
+    # Every 30 minutes, Mon-Fri (roughly covers pre-market through after-hours
+    # US trading; the workstation itself skips the snapshot when it is stale).
+    - cron: '*/30 * * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Fetch S&P 500 snapshot
+        run: node scripts/fetch-snapshot.js
+
+      - name: Commit snapshot if changed
+        run: |
+          if git diff --quiet -- data/sp500.json; then
+            echo "No data changes, nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/sp500.json
+          git commit -m "chore: refresh S&P 500 data snapshot"
+          git push

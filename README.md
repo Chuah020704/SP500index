@@ -54,7 +54,7 @@ A **regime layer** (200-day moving average, drawdown depth, weekly RSI) classifi
 | Index history & quote | Yahoo Finance daily chart (`^GSPC`, 10Y) | Stooq daily CSV |
 | News | Native publisher RSS (新浪财经 / 金十数据 / 东方财富) | Google News RSS scoped to the same publisher |
 
-Requests are retried through public CORS relays when the browser blocks a direct call, and the last successful history payload is cached in `localStorage` (clearly flagged when shown). Data refreshes automatically every 10 minutes while the tab is open, and whenever the tab regains focus.
+Requests are retried through public CORS relays when the browser blocks a direct call. A scheduled GitHub Actions workflow (`.github/workflows/update-data.yml`, running `scripts/fetch-snapshot.js`) fetches the same Yahoo/Stooq data server-side every 30 minutes on trading days and commits it to `data/sp500.json`; the workstation loads that same-origin file as a reliable base whenever the live sources are unreachable from the browser (shown as "scheduled snapshot"), and the last successful payload is also cached in `localStorage` (clearly flagged when shown). Data refreshes automatically every 10 minutes while the tab is open, and whenever the tab regains focus.
 
 ## Run it
 
@@ -76,10 +76,11 @@ manifest.webmanifest, sw.js  PWA install + app-shell cache
 assets/js/indicators.js      RSI, weekly OHLC aggregation, percentiles, drawdown
 assets/js/scoring.js         sub-scores, total score, regime, DCA ladder
 assets/js/backtest.js        forward-return buckets, correlations, DCA sim, FV math
-assets/js/data.js            Yahoo/Stooq loading, caching, market-hours logic
+assets/js/data.js            Yahoo/Stooq loading, snapshot fallback, caching, market-hours logic
 assets/js/news.js            feed aggregation, dedupe, topic classification
 assets/js/i18n.js            中文 / English dictionary + score explanation
 assets/js/app.js             rendering and interaction
+scripts/fetch-snapshot.js    server-side data fetch run by the scheduled Actions workflow
 tests/                       Node test-runner suite
 ```
 
