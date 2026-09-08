@@ -37,12 +37,14 @@ jobs:
 
       - name: Commit snapshot if changed
         run: |
-          if git diff --quiet -- data/sp500.json; then
+          # `git diff` alone misses the first-ever run, where the file is
+          # untracked rather than modified, so stage it first and diff the index.
+          git add data/sp500.json
+          if git diff --cached --quiet -- data/sp500.json; then
             echo "No data changes, nothing to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/sp500.json
           git commit -m "chore: refresh S&P 500 data snapshot"
           git push
