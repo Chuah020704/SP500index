@@ -1,0 +1,11 @@
+{
+  "name": "sp500-dca-workstation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bilingual S&P 500 dollar-cost-averaging workstation: real market data, 0-100 DCA temperature, market regime, backtest and wealth plan.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "start": "python3 -m http.server 8080"
+  }
+}

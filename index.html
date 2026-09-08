@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1120" />
+    <meta name="description" content="AI S&P 500 dollar-cost-averaging workstation: real market data, 0-100 DCA temperature, regime layer, backtest and wealth plan." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="S&P 500 DCA" />
+    <title>标普500 定投工作台 · S&P 500 DCA Workstation</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icons/icon-180.png" />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <h1 data-i18n="appTitle">标普500 定投工作台</h1>
+        <p class="tagline" data-i18n="appTagline"></p>
+      </div>
+      <div class="header-actions">
+        <button id="lang-toggle" class="ghost-btn" type="button" aria-label="Language">EN</button>
+        <button id="refresh" class="ghost-btn" type="button" data-i18n="refresh">刷新数据</button>
+      </div>
+    </header>
+
+    <section id="quote" class="quote-card" aria-live="polite">
+      <div class="quote-loading" data-i18n="loading">正在获取真实行情…</div>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="home" role="tab" data-i18n="tabHome">首页</button>
+      <button class="tab" data-tab="backtest" role="tab" data-i18n="tabBacktest">回测</button>
+      <button class="tab" data-tab="wealth" role="tab" data-i18n="tabWealth">财富</button>
+      <button class="tab" data-tab="news" role="tab" data-i18n="tabNews">资讯</button>
+    </nav>
+
+    <main>
+      <section id="panel-home" class="panel active" role="tabpanel">
+        <article id="score-card" class="card"></article>
+        <article id="monthly-card" class="card"></article>
+        <article id="holdings-card" class="card"></article>
+        <article id="chart-card" class="card"></article>
+        <article id="home-news-card" class="card"></article>
+      </section>
+
+      <section id="panel-backtest" class="panel" role="tabpanel">
+        <article id="backtest-card" class="card"></article>
+        <article id="correlation-card" class="card"></article>
+        <article id="dca-backtest-card" class="card"></article>
+        <article id="time-machine-card" class="card"></article>
+      </section>
+
+      <section id="panel-wealth" class="panel" role="tabpanel">
+        <article id="wealth-card" class="card"></article>
+        <article id="ladder-card" class="card"></article>
+      </section>
+
+      <section id="panel-news" class="panel" role="tabpanel">
+        <article id="news-card" class="card"></article>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p data-i18n="installHint"></p>
+      <p class="disclaimer" data-i18n="disclaimer"></p>
+    </footer>
+
+    <script type="module" src="assets/js/app.js"></script>
+  </body>
+</html>
