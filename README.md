@@ -59,6 +59,8 @@ Requests are retried through public CORS relays when the browser blocks a direct
 
 ## Run it
 
+There are **no dependencies and no build step** — `npm install` is not needed, and there is no server to keep running. Any static file host will do.
+
 ```bash
 npm start          # serves the folder on http://localhost:8080
 npm test           # unit tests: indicators, scoring, backtest, data parsing, i18n
