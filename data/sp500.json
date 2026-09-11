@@ -17595,19 +17595,19 @@
     {
       "date": "2026-09-11",
       "open": 7636.75,
-      "high": 7673.43994140625,
+      "high": 7677.02001953125,
       "low": 7636.75,
-      "close": 7670.259765625
+      "close": 7675.33984375
     }
   ],
   "meta": {
     "currency": "USD",
     "exchangeName": "SNP",
     "marketState": null,
-    "regularMarketPrice": 7670.26,
+    "regularMarketPrice": 7675.34,
     "previousClose": 2127.81,
-    "regularMarketTime": 1789134095000,
+    "regularMarketTime": 1789147564000,
     "timezone": "America/New_York"
   },
-  "generatedAt": 1789134096500
+  "generatedAt": 1789147565388
 }
