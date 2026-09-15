@@ -17590,17 +17590,17 @@
       "open": 7612.2998046875,
       "high": 7617.259765625,
       "low": 7572.68994140625,
-      "close": 7580.33984375
+      "close": 7578.89990234375
     }
   ],
   "meta": {
     "currency": "USD",
     "exchangeName": "SNP",
     "marketState": null,
-    "regularMarketPrice": 7580.34,
+    "regularMarketPrice": 7578.9,
     "previousClose": 2147.26,
-    "regularMarketTime": 1789488463000,
+    "regularMarketTime": 1789501487000,
     "timezone": "America/New_York"
   },
-  "generatedAt": 1789488463930
+  "generatedAt": 1789501489186
 }
