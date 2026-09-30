@@ -17592,8 +17592,8 @@
     "marketState": null,
     "regularMarketPrice": 7670.84,
     "previousClose": 2151.13,
-    "regularMarketTime": 1790714323000,
+    "regularMarketTime": 1790712000000,
     "timezone": "America/New_York"
   },
-  "generatedAt": 1790725829273
+  "generatedAt": 1790737923341
 }
