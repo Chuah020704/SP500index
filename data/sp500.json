@@ -2,27 +2,6 @@
   "source": "Yahoo Finance",
   "bars": [
     {
-      "date": "2016-10-31",
-      "open": 2129.780029296875,
-      "high": 2133.25,
-      "low": 2125.530029296875,
-      "close": 2126.14990234375
-    },
-    {
-      "date": "2016-11-01",
-      "open": 2128.679931640625,
-      "high": 2131.449951171875,
-      "low": 2097.85009765625,
-      "close": 2111.719970703125
-    },
-    {
-      "date": "2016-11-02",
-      "open": 2109.429931640625,
-      "high": 2111.760009765625,
-      "low": 2094,
-      "close": 2097.93994140625
-    },
-    {
       "date": "2016-11-03",
       "open": 2098.800048828125,
       "high": 2102.56005859375,
@@ -17598,16 +17577,23 @@
       "high": 7637.47998046875,
       "low": 7527.56005859375,
       "close": 7580.06982421875
+    },
+    {
+      "date": "2026-11-02",
+      "open": 7610.830078125,
+      "high": 7662.22998046875,
+      "low": 7539.3798828125,
+      "close": 7541.39990234375
     }
   ],
   "meta": {
     "currency": "USD",
     "exchangeName": "SNP",
     "marketState": null,
-    "regularMarketPrice": 7580.07,
-    "previousClose": 2126.41,
-    "regularMarketTime": 1793393263000,
+    "regularMarketPrice": 7541.4,
+    "previousClose": 2097.94,
+    "regularMarketTime": 1793653817000,
     "timezone": "America/New_York"
   },
-  "generatedAt": 1793620358739
+  "generatedAt": 1793653818174
 }
